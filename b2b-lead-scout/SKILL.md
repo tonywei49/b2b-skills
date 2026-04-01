@@ -10,9 +10,18 @@ description: B2B lead discovery skill. Finds companies selling specific products
 Search for B2B companies selling a specific product in a target region. The goal is not just to collect names, but to produce a shortlist that is evidence-backed, deduplicated, and usable for outreach.
 
 **Primary use cases**:
-- Build prospect lists for outbound sales
-- Find distributors, wholesalers, importers, dealers, or manufacturers in a country or region
-- Research local channel partners before market entry
+- Find channel partners (importers, distributors, wholesalers, dealers, trading companies) to represent your product in a target market
+- Build prospect lists for outbound sales to businesses that buy, not make, the product
+- Research local import/distribution networks before market entry
+
+**Important — Who to find**: The goal is to find **companies that BUY products**, not companies that MAKE products. Prioritize:
+- `importer` — imports and distributes products in the local market
+- `distributor` — distributes products to dealers or end buyers
+- `wholesaler` — bulk trade-only sellers
+- `dealer` / `reseller` — sells to end buyers or smaller accounts
+- `trading company` — international trade intermediary
+
+**Deprioritize**: `brand_manufacturer` (companies that make their own brand) — they typically do not buy competing products from external suppliers.
 
 **Outputs**:
 - `leads_[product_slug]_[region_slug]_[YYYY-MM-DD_HHMM].csv`
@@ -99,14 +108,16 @@ Extract from the user request:
 
 - **Region**: country, city, or multi-country region such as `France`, `DACH`, or `Southeast Asia`
 - **Product**: product or service being sold
-- **Business type**: manufacturer / distributor / wholesaler / reseller / importer / trading company
+- **Business type**: importer / distributor / wholesaler / dealer / reseller / trading company / brand_manufacturer
 
-If business type is not specified, search broadly first and classify later.
+**If business type is not specified, default to channel partners** (importer, distributor, wholesaler, dealer, reseller, trading company). Do NOT default to manufacturers — manufacturers make their own products and are unlikely to be prospective buyers.
+
+Only search for or include `brand_manufacturer` if the user explicitly requests it (e.g., they want to find OEM/ODM partners).
 
 Ask one clarifying question only if one of these is missing or materially ambiguous:
 - target region
 - product category
-- whether the user wants manufacturers only vs all trade-facing sellers
+- whether the user specifically wants manufacturers (OEM/ODM) in addition to channel partners
 
 ---
 
@@ -152,7 +163,17 @@ Run an initial balanced set in parallel:
 - 2 category or adjacency queries
 - 2 channel / directory / procurement queries
 
-Build them from:
+**Priority business type terms for queries** (in this order):
+1. `importer` — most likely to buy from foreign suppliers
+2. `distributor` — distributes brands, actively seeks new products
+3. `wholesaler` — bulk trade, always looking for new sources
+4. `dealer` / `reseller` — sells to end buyers
+5. `trading company` — international trade intermediary
+6. `brand_manufacturer` — only if user explicitly requests OEM/ODM partners
+
+**Avoid over-querying `manufacturer` / `OEM` unless the user asks for it.** Queries like `"[product] manufacturer [region]"` will return mostly factories that make their own brands, not buyers.
+
+Build queries from:
 - product term
 - broader category term
 - business type term
@@ -260,21 +281,25 @@ If the lead came from procurement, exhibitor, or competitor-adjacent discovery, 
 
 ## Step 7 - Find a Contact
 
+**This step is mandatory and must be completed before writing output files.** Do not defer contact research to a follow-up item.
+
 Priority order:
 1. official website contact or team page
-2. official email on website
-3. LinkedIn public profile for a relevant role
+2. official email on website (search for `contact`, `about`, `team` pages)
+3. LinkedIn public profile for a relevant role — search `[company name] LinkedIn` then visit the company page for decision-maker names and titles
 4. Hunter.io or Apollo.io domain lookup, if available
 5. additional Tavily searches such as `site:company.com email`, `site:company.com contact`, or `[company name] sales manager`
 
-Preferred contact roles:
-- Sales Director
+Preferred contact roles (in priority order):
+- Sales Director / Head of Sales
 - Business Development Manager
-- Export Manager
-- Purchasing Manager
-- CEO / Founder for small companies
+- Export Manager / International Trade Manager
+- Purchasing Manager / Procurement Manager
+- CEO / Founder (for small companies, often the decision-maker)
 
-Only collect publicly visible business contact data. Prefer role-based or work email over personal data.
+For each lead, attempt at least 2 of the above methods before concluding contact info is unfindable.
+
+**Rule: contact info goes directly into the output fields. If not found after exhaustive search, write `"not found — recommend LinkedIn outreach"` in the `note` field. Do NOT leave contact fields blank and add a to-do section below the table.**
 
 ---
 
@@ -311,6 +336,7 @@ Apply penalties:
 - only directory/listing evidence, no official site confirmation: `-3`
 - company relevance inferred only from snippet, not verified: `-2`
 - no product evidence on site: `-2`
+- classified as `brand_manufacturer`: `-4` (manufacturers make their own products — low likelihood of being a buyer for competing products)
 
 Then clamp the result to `1-10`.
 
@@ -430,15 +456,22 @@ XLSX rules:
 Filename:
 - `leads_[product_slug]_[region_slug]_[YYYY-MM-DD_HHMM].md`
 
+**Critical — Contact info must be in the output, not a follow-up item.** The Markdown summary must include a complete lead table with all contact fields (contact_person, contact_title, email) already filled in. Do NOT output a separate "pending follow-up" or "needs more research" section for contacts — if contact info was not found during enrichment, state that explicitly in the `note` column for that row.
+
 Include:
-- search request summary
+- search request summary (region, product, business types targeted)
 - total leads found
 - confidence distribution
 - business type breakdown
-- top high-confidence leads
-- manual-review leads
-- data quality issues
+- complete lead table (one row per lead, sorted by confidence_score descending) — **all contact fields must be present**
+- leads without contact info (list only those where email is truly unfindable after thorough search, max 2-3 per report)
 - search gaps and suggested follow-up queries
+
+**Do NOT include:**
+- ❌ "待办：联系人信息待进一步获取" or any similar pending-action items
+- ❌ Separate "next steps for contact research" sections
+
+If a lead has no email after thorough research (tried official website, LinkedIn, Hunter.io, and Tavily searches), put `"email: not found after exhaustive search — suggest LinkedIn outreach"` in the `note` column and move on. Never leave the contact section incomplete and flag it as a to-do.
 
 Follow the section order and field naming shown in `examples/sample_leads_industrial-sensors_germany.md`.
 
