@@ -64,6 +64,16 @@ The skill is not limited to exact product-keyword search. It can search through 
 
 This usually produces a better result set than direct keyword search alone, especially in niche B2B markets where many suppliers are discovered indirectly.
 
+Search tool priority for web discovery:
+
+1. Installed `tavily-search` skill, if available and configured
+2. Browser Google
+3. DuckDuckGo / generic web search fallback
+
+Tavily is an optional accelerator, not a required dependency. If it is not installed or not configured, the skill should continue with browser-based and generic web search methods.
+
+For lead qualification, official website product evidence is more important than registry data. Market registries strengthen company identity, status, and decision-maker confidence, but they should not replace product verification from the company website.
+
 ## Output
 
 Each run produces two files in the workspace:
@@ -181,7 +191,7 @@ For batch-mode CSV and Markdown tables, prepend these task-level columns:
 
 ## Dependencies
 
-- Tavily search capability
+- Optional Tavily search capability
 - Optional enrichment tools such as Hunter.io or Apollo.io
 
 ## Design Principles
