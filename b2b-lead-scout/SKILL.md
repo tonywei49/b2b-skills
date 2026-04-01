@@ -114,27 +114,75 @@ Ask one clarifying question only if one of these is missing or materially ambigu
 
 Always search in **English + local language** when the target market is not primarily English-speaking. Local-language search is mandatory because many relevant companies do not rank well in English.
 
+Do **not** rely on only one keyword pattern. Build query sets from multiple discovery angles so the result pool includes obvious sellers, adjacent players, new entrants, and companies discovered indirectly through market structure.
+
+### Discovery Angles
+
+Use as many of these angles as fit the request:
+
+1. **Direct product search**
+   Search the exact product + business type + region.
+
+2. **Category search**
+   Search the broader category when the product is too specific.
+   Example: search `rehabilitation devices` in addition to `pneumatic compression therapy`.
+
+3. **Competitor / brand adjacency**
+   Search for distributors, dealers, service partners, or resellers of known competing brands.
+   Then inspect those companies for overlapping product lines.
+
+4. **Procurement / tender / buying intent**
+   Search procurement portals, tenders, RFQs, distributor requests, hospital purchase notices, and government or enterprise sourcing pages.
+   These often reveal active suppliers that do not rank well on ordinary product searches.
+
+5. **Industry directories / associations / trade fairs**
+   Search exhibitor lists, association member directories, chamber directories, importer/exporter directories, industrial catalogs, and trade-show participant pages.
+
+6. **New company / new market entry signals**
+   Search for recent company launches, distributor appointments, market-entry announcements, funding news, branch openings, or hiring pages related to the category.
+
+7. **Importer / channel / service ecosystem**
+   Search adjacent channel roles such as importer, integrator, solution provider, service company, installer, or sourcing firm when these roles are plausible buyers or channel partners.
+
 ### Stage 1 Query Set
 
-Run these in parallel:
-- 3 English queries
-- 3 local-language queries
+Run an initial balanced set in parallel:
+- 3 direct English queries
+- 3 direct local-language queries
+- 2 category or adjacency queries
+- 2 channel / directory / procurement queries
 
 Build them from:
 - product term
+- broader category term
 - business type term
 - region term
 - optional trade qualifier such as `B2B`, `commercial`, `wholesale`, `OEM`, `supplier`, `dealer`, `importer`
+- optional channel qualifier such as `tender`, `procurement`, `exhibitor`, `member directory`, `dealer`, `partner`, `distributor list`
 
 Use `references/country-search-terms.md` for local-language business terms and example phrasing.
 
 ### Stage 2 Query Set
 
-If Stage 1 returns fewer than 5 usable companies, expand with 4-8 more queries using:
+If Stage 1 returns fewer than 5 usable companies, expand with 6-12 more queries using:
 - synonyms for the product
+- broader category terms
 - alternate business types
 - `importer`, `dealer`, `supplier`, `OEM`, `manufacturer`, `wholesale`
 - city-level searches for major cities in the region
+- trade fair names in the target market
+- industry association names
+- procurement / tender keywords
+- recent-year or recent-month filters for new entrants or new distributor announcements
+
+### Stage 3 Query Set
+
+If precision is low or results are still thin, run targeted follow-up queries using evidence discovered in earlier stages:
+- competitor brand names found during research
+- product families found on strong candidate sites
+- distributor appointment announcements
+- company names from tenders or exhibitor lists
+- importer/export records or chamber listings, if discoverable from primary results
 
 For multi-country regions such as `DACH` or `SEA`, split by country and run each country separately.
 
@@ -149,6 +197,7 @@ Execution requirements:
 - collect at least title, snippet, and URL for each result
 - prefer official websites, product pages, catalog pages, dealer pages, and team/contact pages
 - treat marketplace pages, directory sites, and news articles as secondary evidence only
+- keep track of **discovery angle** for each result, such as `direct_product`, `category`, `competitor_adjacent`, `procurement`, `directory`, `trade_fair`, or `recent_entry`
 
 Do not hardcode a single script path. Use the available Tavily tool or the environment's Tavily search wrapper.
 
@@ -162,8 +211,11 @@ For each search result, extract or infer:
 - candidate country or city
 - possible product relevance
 - possible business type
+- discovery angle
+- whether the result is direct evidence or indirect discovery
 
 Do not treat a listing platform or marketplace as the company itself unless the company identity is explicit.
+Do preserve strong indirect discoveries, because tender portals, exhibitor lists, and competitor partner lists often reveal leads that direct keyword search misses.
 
 ---
 
@@ -193,6 +245,7 @@ Collect:
 - main products or product categories
 - business type
 - evidence URL showing the product match
+- discovery angle that surfaced the lead
 
 Prefer official evidence in this order:
 1. product page
@@ -201,6 +254,7 @@ Prefer official evidence in this order:
 4. contact page
 
 If only directory/news evidence exists, mark the lead for manual review.
+If the lead came from procurement, exhibitor, or competitor-adjacent discovery, try to convert it into official-site verification before scoring it highly.
 
 ---
 
@@ -251,6 +305,7 @@ Start from `0` and add:
 - named contact found: `+1`
 - business email found: `+2`
 - evidence comes from official product/category/contact page rather than a directory/news page: `+1`
+- lead was discovered by more than one independent angle: `+1`
 
 Apply penalties:
 - only directory/listing evidence, no official site confirmation: `-3`
@@ -299,6 +354,7 @@ Columns:
 - official_website
 - source_url
 - evidence_url
+- discovery_angle
 - contact_person
 - contact_title
 - email
@@ -339,6 +395,7 @@ Required batch CSV columns:
 - official_website
 - source_url
 - evidence_url
+- discovery_angle
 - contact_person
 - contact_title
 - email
@@ -443,6 +500,7 @@ Required batch Markdown columns:
 - official_website
 - source_url
 - evidence_url
+- discovery_angle
 - contact_person
 - contact_title
 - email
@@ -465,10 +523,12 @@ Before delivering results, check:
 - confidence scores are distributed realistically
 - no obvious duplicates remain
 - every lead with score `>= 7` has an evidence URL
+- at least 2 discovery angles were used when the search is difficult, niche, or thin
 - CSV opens correctly in Excel
 
 If quality gates are not met:
 - run Stage 2 expanded search
+- add at least one non-direct discovery angle such as competitor adjacency, procurement, directory, or trade-fair search
 - lower confidence where evidence is weak
 - clearly mark unresolved entries as `manual_review`
 
@@ -479,3 +539,4 @@ If quality gates are not met:
 - Prefer precision over volume. A smaller verified list is better than a larger noisy list.
 - Keep directories and news pages as discovery inputs, not final evidence when better sources exist.
 - When in doubt, preserve the row but lower the score and explain the gap in `note`.
+- For hard markets, the best leads often come from indirect discovery first and official verification second.

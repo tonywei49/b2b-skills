@@ -5,8 +5,8 @@ B2B lead discovery skill for AutoClaw / OpenClaw agents. It searches for compani
 ## What It Does
 
 1. Accepts a product + region request, such as `find B2B distributors for industrial sensors in Germany`
-2. Builds bilingual search queries in English + the target market's local language
-3. Searches via Tavily and expands the search when the first pass is too thin
+2. Builds multi-angle bilingual search queries in English + the target market's local language
+3. Searches direct keywords, broader categories, competitor-adjacent channels, directories, procurement sources, and new-entry signals
 4. Deduplicates candidates using website + company identity rules
 5. Verifies product relevance from official sources when possible
 6. Enriches each lead with contact and classification data
@@ -48,6 +48,21 @@ The skill will be auto-discovered on next restart.
 - `search for Japanese industrial sensor suppliers`
 - `build a prospect list of medical device importers in Mexico`
 - `find Taiwan wholesalers selling packaging machinery`
+- `find Turkish suppliers of pneumatic compression therapy using competitor, tender, and exhibitor discovery`
+
+## Search Strategy
+
+The skill is not limited to exact product-keyword search. It can search through multiple discovery angles:
+
+- direct product + region + business type queries
+- broader category searches
+- competitor and brand adjacency
+- procurement and tender sources
+- industry directories, associations, and trade fairs
+- new entrant or market-entry signals
+- importer / integrator / service ecosystem discovery
+
+This usually produces a better result set than direct keyword search alone, especially in niche B2B markets where many suppliers are discovered indirectly.
 
 ## Output
 
@@ -144,6 +159,7 @@ Use them as formatting references for:
 | official_website | Canonical company website |
 | source_url | Discovery source |
 | evidence_url | URL used to verify product relevance |
+| discovery_angle | direct_product / category / competitor_adjacent / procurement / directory / trade_fair / recent_entry / other |
 | contact_person | Key contact name |
 | contact_title | Job title |
 | email | Business email |
@@ -161,6 +177,7 @@ For batch-mode CSV and Markdown tables, prepend these task-level columns:
 - `region`
 - `product`
 - `requested_business_type`
+- `discovery_angle`
 
 ## Dependencies
 
@@ -170,6 +187,7 @@ For batch-mode CSV and Markdown tables, prepend these task-level columns:
 ## Design Principles
 
 - Search in English + local language
+- Use multiple discovery angles, not just direct product keywords
 - Prefer official websites over directory pages
 - Separate `source_url` from `official_website`
 - Keep weak evidence, but mark it clearly and score it lower
