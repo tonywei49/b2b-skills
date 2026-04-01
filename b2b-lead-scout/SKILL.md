@@ -1,8 +1,11 @@
 ---
 name: b2b-lead-scout
 description: B2B lead discovery skill. Finds channel partners (importers, distributors, wholesalers, dealers, trading companies) in target regions using multi-angle web search and market-specific official business registries (SEC EDGAR, Companies House, CNPJ, etc.). Enriches leads with evidence-backed company/contact data and outputs structured CSV/MD files for outbound prospecting.
+---
 
-> **💡 Optional Enhancement — Email Discovery Tools**
+# B2B Lead Scout
+
+> **Optional Enhancement — Email Discovery Tools**
 >
 > The skill enriches contacts using free web search. If you have API keys for professional email discovery services, add them to your environment to significantly improve email coverage:
 > - **Hunter.io** — domain email lookup + verification
@@ -10,10 +13,7 @@ description: B2B lead discovery skill. Finds channel partners (importers, distri
 > - **Findymail** — email finder by company/person
 > - **Snov.io** — email discovery + verification
 >
-> Set the API key as an environment variable (e.g., `HUNTER_API_KEY`) and reference it in the skill's Tavily/curl calls. When these tools are available, the skill will automatically use them to fill `email` and `email_source` fields with higher accuracy.
----
-
-# B2B Lead Scout
+> Set the API key as an environment variable (e.g., `HUNTER_API_KEY`) and reference it in the skill's optional enrichment calls. When these tools are available, the skill will automatically use them to fill `email` and `email_source` fields with higher accuracy.
 
 ## Overview
 
@@ -225,11 +225,17 @@ For multi-country regions such as `DACH` or `SEA`, split by country and run each
 
 This skill uses a **3-layer verification strategy** for each lead. Do NOT rely on a single search engine or directory listing.
 
-#### Layer 1 — Web Search (Priority: Tavily > Browser Google > DuckDuckGo)
+#### Layer 1 — Web Search (Priority: Installed Tavily Skill > Browser Google > DuckDuckGo)
 Search tool priority:
-1. **Tavily** (if `TAVILY_API_KEY` is set) — use `python3 ~/.openclaw/workspace/skills/tavily-search/tavily.py search "[query]" --depth advanced --max-results 10`
+1. **Installed Tavily skill** — if the user has the `tavily-search` skill installed and configured with a working `TAVILY_API_KEY`, use that skill's search entrypoint or wrapper
 2. **Browser Google** — open Google in browser, read results; best for bypassing bot detection on specific searches
-3. **web_search** (DuckDuckGo) — fallback only
+3. **web_search / DuckDuckGo** — fallback only
+
+Tavily rules:
+- treat Tavily as an optional accelerator, not a required dependency
+- do not hardcode a user-specific filesystem path for the Tavily script
+- only call Tavily when the skill is installed and credentials are available
+- if Tavily is unavailable, continue with Browser Google and other web search methods without failing the workflow
 
 Execution requirements:
 - run the initial query set in parallel
@@ -254,7 +260,7 @@ After website verification, query the appropriate official registry (see Step 6 
 - Decision-maker names (SEC EDGAR / Companies House / CNPJ)
 - This layer adds authority to the lead and helps find contacts even when the website has no contact info
 
-**Priority: Layer 2 (official website) > Layer 1 (search) > Layer 3 (registry).** A company that ranks in search results but has no product confirmation on their website should not be scored above 5.
+**Evidence priority for product relevance: Layer 2 (official website) > Layer 1 (search) > Layer 3 (registry).** A company that ranks in search results but has no product confirmation on their website should not be scored above 5. Registry data can strengthen legal identity and contact confidence, but it must not replace product verification from the official website.
 
 ---
 
@@ -322,7 +328,7 @@ For **United States** targets: if the company is publicly traded, always check *
 
 For **UK** targets: **Companies House** gives you director names and roles directly. Cross-reference with the company website to confirm current employment.
 
-For **all other markets**: search the official registry for `[company name] [country] register` or `[company name] CNPJ` via Tavily if the official portal is not directly accessible.
+For **all other markets**: search the official registry for `[company name] [country] register` or equivalent registry terms via the available search tools if the official portal is not directly accessible.
 
 ### Standard Enrichment (all markets)
 
@@ -335,12 +341,14 @@ After registry lookup, also collect from the company website:
 - evidence URL showing the product match
 - discovery angle that surfaced the lead
 
-Prefer evidence in this order:
-1. official registry (highest authority)
-2. product page
-3. category page
-4. about page
-5. contact page
+Use evidence in this order for **product relevance and lead qualification**:
+1. product page on the official website
+2. category page on the official website
+3. about page on the official website
+4. contact page on the official website
+5. official registry for legal-name / officer / company-status confirmation
+
+Registry evidence is authoritative for company identity and officers, but not for product fit. Do not let registry data override missing or weak website product evidence.
 
 If only directory/news evidence exists and no registry data was found, mark the lead for `manual_review`.
 
