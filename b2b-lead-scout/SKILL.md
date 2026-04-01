@@ -1,6 +1,6 @@
 ---
 name: b2b-lead-scout
-description: B2B lead discovery skill. Finds companies selling specific products in target regions, verifies whether they are relevant trade-facing businesses, enriches each lead with evidence-backed company/contact data, and outputs structured CSV/MD files for outbound prospecting.
+description: B2B lead discovery skill. Finds channel partners (importers, distributors, wholesalers, dealers, trading companies) in target regions using multi-angle web search and market-specific official business registries (SEC EDGAR, Companies House, CNPJ, etc.). Enriches leads with evidence-backed company/contact data and outputs structured CSV/MD files for outbound prospecting.
 ---
 
 # B2B Lead Scout
@@ -158,8 +158,8 @@ Use as many of these angles as fit the request:
 ### Stage 1 Query Set
 
 Run an initial balanced set in parallel:
-- 3 direct English queries
-- 3 direct local-language queries
+- 3 direct English queries — prioritize channel partner types: `importer`, `distributor`, `wholesaler`, `dealer`, `trading company`
+- 3 direct local-language queries — same channel partner focus
 - 2 category or adjacency queries
 - 2 channel / directory / procurement queries
 
@@ -176,9 +176,9 @@ Run an initial balanced set in parallel:
 Build queries from:
 - product term
 - broader category term
-- business type term
+- channel partner business type (prioritize the list above)
 - region term
-- optional trade qualifier such as `B2B`, `commercial`, `wholesale`, `OEM`, `supplier`, `dealer`, `importer`
+- optional trade qualifier such as `B2B`, `commercial`, `wholesale`, `supplier` (avoid `manufacturer` unless intentional)
 - optional channel qualifier such as `tender`, `procurement`, `exhibitor`, `member directory`, `dealer`, `partner`, `distributor list`
 
 Use `references/country-search-terms.md` for local-language business terms and example phrasing.
@@ -188,13 +188,13 @@ Use `references/country-search-terms.md` for local-language business terms and e
 If Stage 1 returns fewer than 5 usable companies, expand with 6-12 more queries using:
 - synonyms for the product
 - broader category terms
-- alternate business types
-- `importer`, `dealer`, `supplier`, `OEM`, `manufacturer`, `wholesale`
+- alternate channel partner types: `importer`, `distributor`, `wholesaler`, `dealer`, `trading company`
 - city-level searches for major cities in the region
 - trade fair names in the target market
 - industry association names
 - procurement / tender keywords
 - recent-year or recent-month filters for new entrants or new distributor announcements
+- `manufacturer` / `OEM` — only if user explicitly wants factory-level suppliers
 
 ### Stage 3 Query Set
 
@@ -257,9 +257,42 @@ Do not merge distinct subsidiaries or country branches unless the legal entity i
 
 ## Step 6 - Enrich Company Data
 
-For each deduplicated company, verify against the official website when possible.
+For each deduplicated company, verify against the official website and market-specific business registries.
 
-Collect:
+### Market-Specific Official Business Registries
+
+Use the appropriate official registry to enrich company data, especially for decision-maker names and business registration details:
+
+| Country/Region | Official Registry | What it gives you | Cost |
+|---|---|---|---|
+| **United States (public cos)** | SEC EDGAR (sec.gov/cgi-bin/browse-edgar) | Executive names/titles from 10-K/10-Q filings, subsidiaries, business description | ✅ Free |
+| **United States (all)** | Corporation Wiki (corporationwiki.com) | Officers, directors, shareholders, UCC filings | Free + Paid |
+| **Brazil** | Receita Federal (receita.fazenda.gov.br) | CNPJ registration data: legal name, address, status, shareholders | ✅ Free |
+| **Brazil** | receitaconsulta.com.br / cnpj.biz / acheiempresa.com.br | CNPJ data with ratings and visualizations | Free + Paid |
+| **United Kingdom** | Companies House (companieshouse.gov.uk) | Directors, shareholders, annual accounts, company status | ✅ Free (basic) |
+| **Germany** | Bundesanzeiger (bundesanzeiger.de) | Annual reports, financial statements | ✅ Free |
+| **Germany** | Handelsregister (handelsregister.de) | Registration details, legal representatives | ✅ Free (partial) |
+| **China** | 国家企业信用信息公示系统 (gsxt.gov.cn) | Registration info, shareholders, annual reports | ✅ Free |
+| **India** | MCA Portal (mca.gov.in) | Director names, financials, charges, company status | ✅ Free |
+| **Singapore** | ACRA BizFile+ (bizfile.gov.sg) | Company profile, financials, officers | ✅ Free (basic) |
+| **Australia** | ASIC Connect (asic.gov.au) | Company details, officers, documents | ✅ Free (basic) |
+| **Netherlands** | KVK (kvk.nl) | Trade register, company details | ✅ Free |
+| **France** | Infogreffe (infogreffe.fr) | Registrations, financials, directors | Paid |
+| **Japan** | National Tax Agency (nta.go.jp) / Tokyo Company Lookup | Company registration, financial data | ✅ Free |
+
+### Enrichment Priority by Market
+
+For **Brazil** targets: always query the CNPJ registry first (Receita Federal or cnpj.biz) — it gives you the official legal name, trade name (nome fantasia), address, and company status. Use this to verify the company's legal existence before outreach.
+
+For **United States** targets: if the company is publicly traded, always check **SEC EDGAR** — the 10-K/10-Q filings list executive officers with their exact titles. This is the highest-quality US business data available for free.
+
+For **UK** targets: **Companies House** gives you director names and roles directly. Cross-reference with the company website to confirm current employment.
+
+For **all other markets**: search the official registry for `[company name] [country] register` or `[company name] CNPJ` via Tavily if the official portal is not directly accessible.
+
+### Standard Enrichment (all markets)
+
+After registry lookup, also collect from the company website:
 - official website
 - city / country
 - short company description
@@ -268,14 +301,14 @@ Collect:
 - evidence URL showing the product match
 - discovery angle that surfaced the lead
 
-Prefer official evidence in this order:
-1. product page
-2. category page
-3. about page
-4. contact page
+Prefer evidence in this order:
+1. official registry (highest authority)
+2. product page
+3. category page
+4. about page
+5. contact page
 
-If only directory/news evidence exists, mark the lead for manual review.
-If the lead came from procurement, exhibitor, or competitor-adjacent discovery, try to convert it into official-site verification before scoring it highly.
+If only directory/news evidence exists and no registry data was found, mark the lead for `manual_review`.
 
 ---
 
@@ -283,23 +316,43 @@ If the lead came from procurement, exhibitor, or competitor-adjacent discovery, 
 
 **This step is mandatory and must be completed before writing output files.** Do not defer contact research to a follow-up item.
 
-Priority order:
-1. official website contact or team page
-2. official email on website (search for `contact`, `about`, `team` pages)
-3. LinkedIn public profile for a relevant role — search `[company name] LinkedIn` then visit the company page for decision-maker names and titles
-4. Hunter.io or Apollo.io domain lookup, if available
-5. additional Tavily searches such as `site:company.com email`, `site:company.com contact`, or `[company name] sales manager`
+### Market-Specific Contact Finding
 
-Preferred contact roles (in priority order):
+**United States (publicly traded companies):**
+→ Always check **SEC EDGAR** first. Search for the company on `sec.gov/cgi-bin/browse-edgar`, find their latest 10-K or 10-Q filing, and extract officer names and titles from the "Item 1A — Risk Factors" or "Item 10 — Directors, Executive Officers and Corporate Governance" section. This gives you C-suite and VP-level contacts with verified current titles — highest quality free US business data available.
+
+**Brazil:**
+→ Query CNPJ data (Receita Federal or cnpj.biz). The registry does not give contact names directly, but gives the company's legal representative (responsável legal) and opening date. Use this to verify the company is active, then find the purchasing/sales decision-maker via LinkedIn.
+
+**United Kingdom:**
+→ Companies House lists current directors with their appointment dates and service addresses. Use director names to search LinkedIn for current titles. Prioritize directors with "Commercial", "Procurement", or "Export" in their profile.
+
+**All other markets:** Follow the general priority order below, using the official registry from Step 6 to get company official name and legal representative names as a starting point for LinkedIn research.
+
+### General Contact Priority Order
+
+1. **SEC EDGAR** (US public companies only) — officer names + titles from 10-K/10-Q filings
+2. Official website contact or team page
+3. Official email on website (search for `contact`, `about`, `team` pages)
+4. LinkedIn — search `[company name]` then visit company page for decision-maker names and titles; also search `[person name] LinkedIn` to verify current role
+5. Market-specific business registry (see Step 6 table) for legal representative names
+6. Hunter.io or Apollo.io domain lookup, if available
+7. additional Tavily searches such as `site:company.com email`, `site:company.com contact`, or `[company name] sales manager`
+
+**Preferred contact roles** (in priority order):
 - Sales Director / Head of Sales
 - Business Development Manager
 - Export Manager / International Trade Manager
 - Purchasing Manager / Procurement Manager
 - CEO / Founder (for small companies, often the decision-maker)
 
-For each lead, attempt at least 2 of the above methods before concluding contact info is unfindable.
+### Contact Research Rules
 
-**Rule: contact info goes directly into the output fields. If not found after exhaustive search, write `"not found — recommend LinkedIn outreach"` in the `note` field. Do NOT leave contact fields blank and add a to-do section below the table.**
+For each lead, attempt at least **2 of the above methods** before concluding contact info is unfindable.
+
+**Rule: contact info goes directly into the output fields.** If not found after exhaustive search, write `"not found — recommend LinkedIn outreach"` in the `note` field. Do NOT leave contact fields blank and add a to-do section below the table.
+
+**Brazil-specific rule:** Put the CNPJ status (`ativa` / `inativa`) and registered legal representative name in the `note` field when email is not found. Example: `"CNPJ: ativa, legal rep: João Silva — recommend LinkedIn outreach to purchasing manager"`.
 
 ---
 
