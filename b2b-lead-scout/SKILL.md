@@ -221,16 +221,37 @@ For multi-country regions such as `DACH` or `SEA`, split by country and run each
 
 ## Step 3 - Execute Search
 
-Use **Tavily** as the primary search engine.
+### Search Strategy: Google + Official Website + Registry (3-Layer Verification)
+
+This skill uses a **3-layer verification strategy** for each lead. Do NOT rely on a single search engine or directory listing.
+
+#### Layer 1 — Web Search (Google via browser)
+Use the browser to run Google searches. If browser Google is blocked by bot detection, fall back to `web_search` (DuckDuckGo).
 
 Execution requirements:
 - run the initial query set in parallel
 - collect at least title, snippet, and URL for each result
 - prefer official websites, product pages, catalog pages, dealer pages, and team/contact pages
-- treat marketplace pages, directory sites, and news articles as secondary evidence only
-- keep track of **discovery angle** for each result, such as `direct_product`, `category`, `competitor_adjacent`, `procurement`, `directory`, `trade_fair`, or `recent_entry`
+- treat marketplace pages, directory sites, and news articles as **secondary evidence only**
+- keep track of **discovery angle** for each result: `direct_product`, `category`, `competitor_adjacent`, `procurement`, `directory`, `trade_fair`, `recent_entry`
 
-Do not hardcode a single script path. Use the available Tavily tool or the environment's Tavily search wrapper.
+> **Note on search tools:** If a Tavily MCP or similar AI search tool is available in your environment, use it. If not, use browser-based Google search (open Google in browser, read results) or `web_search` as a fallback. The critical thing is: **always follow up each search result by visiting the official website** before recording the lead.
+
+#### Layer 2 — Official Website Verification (mandatory)
+For every lead found, **visit the company's official website** to verify:
+- Does the company actually sell or trade the product?
+- What is their exact business type (importer, distributor, etc.)?
+- Collect: contact person, email, phone from the website
+
+If the website does not confirm the product match, downgrade confidence or mark as `manual_review`.
+
+#### Layer 3 — Market-Specific Registry (enhances confidence)
+After website verification, query the appropriate official registry (see Step 6 table) to cross-reference:
+- Company legal name and registration status
+- Decision-maker names (SEC EDGAR / Companies House / CNPJ)
+- This layer adds authority to the lead and helps find contacts even when the website has no contact info
+
+**Priority: Layer 2 (official website) > Layer 1 (search) > Layer 3 (registry).** A company that ranks in search results but has no product confirmation on their website should not be scored above 5.
 
 ---
 
