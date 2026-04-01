@@ -1,0 +1,30 @@
+# Hidden Buyer Lead Table Example
+
+Search target:
+- Product: children's balls
+- Market: UAE
+- Confirmed buyer directions: hotels and resorts, schools, family entertainment centers
+
+## Strongest Buyer Pattern
+
+The strongest hidden-buyer pattern in this search is organizations running repeated child-focused activities. These entities are not normal sports distributors, but they have clear operational reasons to purchase group-use activity items in volume.
+
+## Lead Table
+
+| company_name | country | city | website | company_type | buyer_type | buyer_fit_type | candidate_segment | usage_scenario | buying_logic | why_possible_buyer | bulk_purchase_signal | evidence_type | purchase_likelihood | outreach_angle | next_action | contact_name | contact_role | email | phone | linkedin | source_url | evidence_url | verification_status | confidence_score | notes |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Example Resort Group | UAE | Dubai | https://www.example-resort.ae | hospitality operator | end_buyer | direct_hidden_buyer | hotels and resorts | kids club recreation | repeated family activity programming requires reusable play equipment | runs dedicated kids club programming and family recreation services | visible kids club plus activity programming | direct_program_evidence | high | pitch family recreation and kids-club use case | contact recreation or kids-club manager | Sarah Ali | Recreation Manager | recreation@example-resort.ae | +971-4-555-1000 | https://www.linkedin.com/company/example-resort | https://www.example-resort.ae/kids-club | https://www.example-resort.ae/kids-club | verified | 88 | Strong scenario fit and recurring guest turnover support repeat purchasing. |
+| Example Education Group | UAE | Abu Dhabi | https://www.example-education.ae | education group | institutional_buyer | direct_hidden_buyer | schools and education groups | PE and student activity use | schools often buy in batches for programs and grade groups | operates multiple student activity programs and school facilities | multi-campus operations and structured activity programs | service_evidence | high | pitch class-use and school activity bundle | contact PE coordinator or school procurement | Omar Hassan | Procurement Officer | procurement@example-education.ae | +971-2-555-2200 | https://www.linkedin.com/company/example-education | https://www.example-education.ae/activities | https://www.example-education.ae/activities | verified | 84 | Strong institutional fit with clear repeated-use scenario. |
+| Example Family Fun Center | UAE | Sharjah | https://www.examplefun.ae | family entertainment operator | end_buyer | plausible_hidden_buyer | family entertainment centers | soft play and activity zone use | venue may replace and rotate child activity items regularly | children-focused venue with active play programming | visible activity facilities and group packages | facility_evidence | medium | pitch low-cost repeat-use play equipment | contact operations manager |  |  |  | +971-6-555-3300 | https://www.linkedin.com/company/examplefun | https://www.examplefun.ae | https://www.examplefun.ae/activities | partial | 71 | Strong facility logic but no confirmed named buyer yet. |
+
+## Weak Spots
+
+- The entertainment-center segment shows good operational fit, but contact quality is weaker than hotels and schools.
+- Mall-related directions produced some plausible entities, but evidence for repeated purchasing was less direct.
+
+## Suggested Next Search Angle
+
+If more leads are needed, expand into:
+- mall event operators
+- children program vendors
+- event activation agencies serving family campaigns
