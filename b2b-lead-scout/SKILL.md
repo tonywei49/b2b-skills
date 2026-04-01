@@ -1,6 +1,16 @@
 ---
 name: b2b-lead-scout
 description: B2B lead discovery skill. Finds channel partners (importers, distributors, wholesalers, dealers, trading companies) in target regions using multi-angle web search and market-specific official business registries (SEC EDGAR, Companies House, CNPJ, etc.). Enriches leads with evidence-backed company/contact data and outputs structured CSV/MD files for outbound prospecting.
+
+> **💡 Optional Enhancement — Email Discovery Tools**
+>
+> The skill enriches contacts using free web search. If you have API keys for professional email discovery services, add them to your environment to significantly improve email coverage:
+> - **Hunter.io** — domain email lookup + verification
+> - **Apollo.io** — B2B contact database with email
+> - **Findymail** — email finder by company/person
+> - **Snov.io** — email discovery + verification
+>
+> Set the API key as an environment variable (e.g., `HUNTER_API_KEY`) and reference it in the skill's Tavily/curl calls. When these tools are available, the skill will automatically use them to fill `email` and `email_source` fields with higher accuracy.
 ---
 
 # B2B Lead Scout
