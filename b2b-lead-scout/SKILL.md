@@ -225,8 +225,11 @@ For multi-country regions such as `DACH` or `SEA`, split by country and run each
 
 This skill uses a **3-layer verification strategy** for each lead. Do NOT rely on a single search engine or directory listing.
 
-#### Layer 1 — Web Search (Google via browser)
-Use the browser to run Google searches. If browser Google is blocked by bot detection, fall back to `web_search` (DuckDuckGo).
+#### Layer 1 — Web Search (Priority: Tavily > Browser Google > DuckDuckGo)
+Search tool priority:
+1. **Tavily** (if `TAVILY_API_KEY` is set) — use `python3 ~/.openclaw/workspace/skills/tavily-search/tavily.py search "[query]" --depth advanced --max-results 10`
+2. **Browser Google** — open Google in browser, read results; best for bypassing bot detection on specific searches
+3. **web_search** (DuckDuckGo) — fallback only
 
 Execution requirements:
 - run the initial query set in parallel
@@ -235,7 +238,7 @@ Execution requirements:
 - treat marketplace pages, directory sites, and news articles as **secondary evidence only**
 - keep track of **discovery angle** for each result: `direct_product`, `category`, `competitor_adjacent`, `procurement`, `directory`, `trade_fair`, `recent_entry`
 
-> **Note on search tools:** If a Tavily MCP or similar AI search tool is available in your environment, use it. If not, use browser-based Google search (open Google in browser, read results) or `web_search` as a fallback. The critical thing is: **always follow up each search result by visiting the official website** before recording the lead.
+> **The critical thing is: always follow up each search result by visiting the official website** before recording the lead. Search results are starting points, not final evidence.
 
 #### Layer 2 — Official Website Verification (mandatory)
 For every lead found, **visit the company's official website** to verify:
