@@ -326,43 +326,63 @@ If only directory/news evidence exists and no registry data was found, mark the 
 
 **This step is mandatory and must be completed before writing output files.** Do not defer contact research to a follow-up item.
 
-### Market-Specific Contact Finding
+### Recommended Free Email Discovery Workflow
 
-**United States (publicly traded companies):**
-→ Always check **SEC EDGAR** first. Search for the company on `sec.gov/cgi-bin/browse-edgar`, find their latest 10-K or 10-Q filing, and extract officer names and titles from the "Item 1A — Risk Factors" or "Item 10 — Directors, Executive Officers and Corporate Governance" section. This gives you C-suite and VP-level contacts with verified current titles — highest quality free US business data available.
+Use this 5-step workflow for each lead. Attempt in order:
 
-**Brazil:**
-→ Query CNPJ data (Receita Federal or cnpj.biz). The registry does not give contact names directly, but gives the company's legal representative (responsável legal) and opening date. Use this to verify the company is active, then find the purchasing/sales decision-maker via LinkedIn.
+**Step 1 — Find the person (name + title)**
+- SEC EDGAR 10-K/10-Q (US public companies) → extract officer names + verified titles
+- Companies House (UK) → extract director names + roles
+- CNPJ registry (Brazil) → extract legal representative name
+- LinkedIn: search `[company name]` → visit company page → find Sales/Purchasing/Export decision-makers
 
-**United Kingdom:**
-→ Companies House lists current directors with their appointment dates and service addresses. Use director names to search LinkedIn for current titles. Prioritize directors with "Commercial", "Procurement", or "Export" in their profile.
+**Step 2 — Find the email**
+Use these methods in priority order:
 
-**All other markets:** Follow the general priority order below, using the official registry from Step 6 to get company official name and legal representative names as a starting point for LinkedIn research.
+1. **Google site search** — fastest free method:
+   ```
+   site:company.com "contact" OR "@company.com"
+   site:company.com "sales" OR "purchasing" OR "procurement"
+   "[person name]" "[company]" email
+   ```
 
-### General Contact Priority Order
+2. **Indeed / Glassdoor** — search `[company name] careers` or `[company name] jobs` → click a job posting → HR or recruiting contact email is often in the posting
 
-1. **SEC EDGAR** (US public companies only) — officer names + titles from 10-K/10-Q filings
-2. Official website contact or team page
-3. Official email on website (search for `contact`, `about`, `team` pages)
-4. LinkedIn — search `[company name]` then visit company page for decision-maker names and titles; also search `[person name] LinkedIn` to verify current role
-5. Market-specific business registry (see Step 6 table) for legal representative names
-6. Hunter.io or Apollo.io domain lookup, if available
-7. additional Tavily searches such as `site:company.com email`, `site:company.com contact`, or `[company name] sales manager`
+3. **LinkedIn profile** — visit the decision-maker's personal LinkedIn page; some profiles show email (click "Contact info" on profile page)
 
-**Preferred contact roles** (in priority order):
+4. **Company's Press Releases / News** — press releases often have a media contact email at the bottom; search `[company name] press release`
+
+5. **Twitter/X / Facebook Business** — check the company's official social media Bio; some include a contact email
+
+6. **Email permutation + verification** — if you know the person's name and the company's domain:
+   - Guess common patterns: `first.last@company.com`, `firstlast@company.com`, `f.last@company.com`
+   - Verify with a free email checker (e.g., Mailtester, ZeroBounce free trial)
+
+7. **Crunchbase** — startup/VC-backed companies often have contact info listed
+
+8. **Hunter.io / Apollo.io** — use if API key is available (set as `HUNTER_API_KEY` env var), otherwise skip
+
+**Step 3 — If no email found, record what you have**
+- Record: person name + title in `contact_person` / `contact_title`
+- Put in `email`: `''` (empty)
+- Put in `note`: `"contact identified but email not found — recommend outreach via LinkedIn"`
+- Put in `email_source`: the method that gave you the person's name (e.g., `"LinkedIn"`, `"SEC EDGAR"`, `"Companies House"`)
+
+### Preferred Contact Roles (in priority order)
+
 - Sales Director / Head of Sales
 - Business Development Manager
 - Export Manager / International Trade Manager
 - Purchasing Manager / Procurement Manager
-- CEO / Founder (for small companies, often the decision-maker)
+- CEO / Founder (for small companies — often the actual buyer)
 
 ### Contact Research Rules
 
-For each lead, attempt at least **2 of the above methods** before concluding contact info is unfindable.
+For each lead, attempt at least **2 different methods from the workflow above** before concluding contact info is unfindable.
 
-**Rule: contact info goes directly into the output fields.** If not found after exhaustive search, write `"not found — recommend LinkedIn outreach"` in the `note` field. Do NOT leave contact fields blank and add a to-do section below the table.
+**Rule: contact info goes directly into the output fields.** If not found after exhaustive search, write `"contact identified: [name], title: [title] — email not found, recommend LinkedIn outreach"` in the `note` field. Do NOT leave contact fields blank and do NOT add a to-do section below the table.
 
-**Brazil-specific rule:** Put the CNPJ status (`ativa` / `inativa`) and registered legal representative name in the `note` field when email is not found. Example: `"CNPJ: ativa, legal rep: João Silva — recommend LinkedIn outreach to purchasing manager"`.
+**Brazil-specific:** Put the CNPJ status and legal representative in the `note` field. Example: `"CNPJ: ativa, legal rep: João Silva — email not found, recommend LinkedIn outreach to purchasing manager"`.
 
 ---
 
