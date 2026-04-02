@@ -236,6 +236,25 @@ metadata: {"openclaw":{"emoji":"🧭","homepage":"https://github.com/tonywei49/b
 
 ---
 
+## Search Priority
+
+本 skill 不要求必须使用 Tavily，但应遵循固定的检索优先级。
+
+优先级如下：
+
+1. 已安装并配置的 `tavily-search`
+2. 浏览器 Google 搜索
+3. DuckDuckGo 或其他通用搜索兜底
+
+规则：
+
+- Tavily 是可选加速器，不是硬依赖
+- 如果没有 Tavily，不要中断任务，应继续用浏览器搜索完成研究
+- 搜索工具只用于发现候选页面与线索，最终判断应回到公开目录、官网分类页、产品页或解决方案页
+- 不能只根据搜索摘要判断联卖品类，必须尽量回到证据页验证
+
+---
+
 ## Output Requirements
 
 默认支持三种输出：
