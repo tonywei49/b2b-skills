@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>轮椅美国市场卖家目录横向分析</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; background: #0f1117; color: #e2e8f0; line-height: 1.6; }
+  .container { max-width: 1280px; margin: 0 auto; padding: 2rem; }
+  header { text-align: center; margin-bottom: 2.5rem; padding-bottom: 1.8rem; border-bottom: 1px solid #263244; }
+  header h1 { font-size: 1.9rem; color: #f8fafc; margin-bottom: 0.5rem; }
+  header p { color: #94a3b8; font-size: 0.95rem; }
+  .stats { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1.5rem; }
+  .stat { background: #172132; border: 1px solid #2b3b53; border-radius: 10px; padding: 1rem 1.3rem; min-width: 180px; text-align: center; }
+  .stat .num { font-size: 1.9rem; font-weight: 700; color: #7dd3fc; }
+  .stat .label { font-size: 0.82rem; color: #94a3b8; margin-top: 0.25rem; }
+  .search-box { background: #172132; border: 1px solid #2b3b53; border-radius: 12px; padding: 1rem; margin-bottom: 1.8rem; }
+  .search-box input { width: 100%; padding: 0.8rem 1rem; background: #0b1422; border: 1px solid #334155; border-radius: 8px; color: #f8fafc; font-size: 1rem; }
+  .search-box input:focus { outline: none; border-color: #7dd3fc; }
+  .filter-row { display: flex; gap: 0.55rem; margin-top: 0.8rem; flex-wrap: wrap; }
+  .filter-btn { padding: 0.4rem 0.9rem; border-radius: 999px; border: 1px solid #334155; background: #0b1422; color: #94a3b8; font-size: 0.8rem; cursor: pointer; transition: all 0.2s; }
+  .filter-btn:hover, .filter-btn.active { background: #7dd3fc; color: #0b1422; border-color: #7dd3fc; }
+  .summary-panel { background: #132033; border: 1px solid #2b3b53; border-radius: 12px; padding: 1.1rem 1.2rem; margin-bottom: 2rem; }
+  .summary-panel h2 { font-size: 1.05rem; color: #f8fafc; margin-bottom: 0.65rem; }
+  .summary-panel ul { padding-left: 1.2rem; color: #cbd5e1; }
+  .summary-panel li + li { margin-top: 0.35rem; }
+  .category { margin-bottom: 2rem; }
+  .cat-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 0.9rem; cursor: pointer; }
+  .cat-header h3 { font-size: 1.15rem; color: #f8fafc; }
+  .cat-badge { background: #243347; color: #94a3b8; font-size: 0.75rem; padding: 0.22rem 0.65rem; border-radius: 999px; }
+  .toggle { margin-left: auto; color: #7dd3fc; font-size: 0.9rem; }
+  .toggle.collapsed::before { content: "▶"; }
+  .toggle.expanded::before { content: "▼"; }
+  .cat-summary { background: #132033; border: 1px solid #25344a; border-radius: 10px; padding: 0.9rem 1rem; margin-bottom: 0.9rem; color: #cbd5e1; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
+  .card-grid.hidden { display: none; }
+  .card { background: #172132; border-radius: 12px; padding: 1rem; border: 1px solid #2b3b53; position: relative; }
+  .card.top { border-color: #f59e0b; }
+  .card.top::before { content: "TOP"; position: absolute; top: -1px; right: 12px; background: #f59e0b; color: #111827; font-size: 0.65rem; font-weight: 700; padding: 2px 6px; border-radius: 0 0 6px 6px; }
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.6rem; margin-bottom: 0.5rem; }
+  .card-name { font-size: 0.98rem; font-weight: 600; color: #f8fafc; flex: 1; }
+  .card-score { font-size: 0.8rem; font-weight: 700; padding: 0.2rem 0.55rem; border-radius: 6px; white-space: nowrap; }
+  .score-high { background: #064e3b; color: #6ee7b7; }
+  .score-mid { background: #78350f; color: #fbbf24; }
+  .card-type { display: inline-block; font-size: 0.75rem; color: #7dd3fc; background: #10304d; padding: 0.18rem 0.55rem; border-radius: 6px; margin-bottom: 0.6rem; }
+  .card-meta { font-size: 0.82rem; color: #94a3b8; margin-bottom: 0.45rem; }
+  .block-title { font-size: 0.76rem; color: #7dd3fc; margin-top: 0.75rem; margin-bottom: 0.25rem; text-transform: uppercase; letter-spacing: 0.04em; }
+  .card-text { font-size: 0.84rem; color: #dbe7f5; }
+  .tag-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.35rem; }
+  .tag { background: #0b1422; border: 1px solid #334155; color: #e2e8f0; font-size: 0.74rem; padding: 0.26rem 0.55rem; border-radius: 999px; }
+  .tag.non-obvious { border-color: #f59e0b; color: #fbbf24; }
+  .card-link { margin-top: 0.75rem; font-size: 0.8rem; color: #94a3b8; }
+  .card-link a { color: #7dd3fc; text-decoration: none; }
+  .card-link a:hover { text-decoration: underline; }
+  .issues { margin-top: 2.5rem; background: #1b1820; border: 1px solid #3b2d3d; border-radius: 12px; padding: 1.1rem 1.2rem; }
+  .issues h2 { font-size: 1rem; color: #f8fafc; margin-bottom: 0.7rem; }
+  .issues ul { padding-left: 1.2rem; color: #cbd5e1; }
+  .issues li + li { margin-top: 0.35rem; }
+  footer { text-align: center; color: #64748b; font-size: 0.8rem; padding: 2rem 0 1rem; }
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>轮椅美国市场卖家目录横向分析</h1>
+  <p>整理日期：2026-04-02 | 样本公司：6 家 | 卖家类型：6 类 | 输出语言：中文</p>
+  <div class="stats">
+    <div class="stat"><div class="num">6</div><div class="label">卖家类型</div></div>
+    <div class="stat"><div class="num">6</div><div class="label">代表公司</div></div>
+    <div class="stat"><div class="num">13</div><div class="label">显然联卖品类</div></div>
+    <div class="stat"><div class="num">14</div><div class="label">非显然联卖品类</div></div>
+  </div>
+</header>
+
+<div class="summary-panel">
+  <h2>总体结论</h2>
+  <ul>
+    <li>轮椅并不只出现在 mobility 专营商目录中，还同时出现在 homecare、机构供应、rehab solution 和目录型采购体系中。</li>
+    <li>最值得关注的非显然联卖方向包括失禁护理、伤口护理、监测设备、清洁运营用品、感觉统合产品和应急物资。</li>
+    <li>跨品类最强的不是专业零售商，而是批发分销商、方案型卖家和目录型供应商。</li>
+  </ul>
+</div>
+
+<div class="search-box">
+  <input type="text" id="searchInput" placeholder="搜索公司、卖家类型、联卖品类...">
+  <div class="filter-row">
+    <button class="filter-btn active" data-filter="all">全部</button>
+    <button class="filter-btn" data-filter="brand">品牌商</button>
+    <button class="filter-btn" data-filter="dist">批发商 / 分销商</button>
+    <button class="filter-btn" data-filter="retail">专业零售商</button>
+    <button class="filter-btn" data-filter="ecom">电商卖家</button>
+    <button class="filter-btn" data-filter="solution">方案型卖家</button>
+    <button class="filter-btn" data-filter="catalog">目录型供应商</button>
+    <button class="filter-btn" data-filter="top">Top 90+</button>
+  </div>
+</div>
+
+<section class="category" data-category="brand">
+  <div class="cat-header" onclick="toggleCat('brand')">
+    <h3>第一类：品牌商</h3>
+    <span class="cat-badge">1 家</span>
+    <span class="toggle expanded" id="toggle-brand"></span>
+  </div>
+  <div class="cat-summary">品牌商的扩张主要围绕居家护理、适老化与基础康复场景，不只卖 mobility，而是把轮椅纳入完整 homecare 体系。</div>
+  <div class="card-grid" id="grid-brand">
+    <div class="card top searchable" data-score="93" data-tags="brand drivemedical homecare 病床 移位设备">
+      <div class="card-header"><div class="card-name">Drive DeVilbiss Healthcare</div><span class="card-score score-high">93</span></div>
+      <div class="card-type">品牌商</div>
+      <div class="card-meta">📍 Port Washington, NY | homecare / mobility 品牌</div>
+      <div class="block-title">目标产品匹配</div>
+      <div class="card-text">官网存在轮椅分类，且与助行、浴室安全、护理床等目录并列。</div>
+      <div class="block-title">其他主营商品</div>
+      <div class="tag-list">
+        <span class="tag">助行器</span><span class="tag">浴室安全</span><span class="tag">护理床</span><span class="tag">移位设备</span><span class="tag">床垫</span>
+      </div>
+      <div class="block-title">非显然联卖品类</div>
+      <div class="tag-list">
+        <span class="tag non-obvious">护理床</span><span class="tag non-obvious">移位设备</span><span class="tag non-obvious">床边桌</span>
+      </div>
+      <div class="block-title">目录逻辑</div>
+      <div class="card-text">same_customer + same_scenario + same_business_model</div>
+      <div class="card-link">证据：<a href="https://shop.drivemedical.com/collections/wheelchairs" target="_blank">官网轮椅分类</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="category" data-category="dist">
+  <div class="cat-header" onclick="toggleCat('dist')">
+    <h3>第二类：批发商 / 分销商</h3>
+    <span class="cat-badge">1 家</span>
+    <span class="toggle expanded" id="toggle-dist"></span>
+  </div>
+  <div class="cat-summary">这类卖家的目录最容易跨出 mobility，本质是为机构客户提供一站式医疗和护理采购。</div>
+  <div class="card-grid" id="grid-dist">
+    <div class="card top searchable" data-score="95" data-tags="dist medline 失禁护理 伤口护理 清洁用品">
+      <div class="card-header"><div class="card-name">Medline</div><span class="card-score score-high">95</span></div>
+      <div class="card-type">批发商 / 分销商</div>
+      <div class="card-meta">📍 Northfield, IL | 医疗与后急性护理综合分销商</div>
+      <div class="block-title">目标产品匹配</div>
+      <div class="card-text">官网 mobility 类别下可见轮椅产品，且位于更宽的机构采购目录中。</div>
+      <div class="block-title">其他主营商品</div>
+      <div class="tag-list">
+        <span class="tag">病床</span><span class="tag">患者服饰</span><span class="tag">失禁护理</span><span class="tag">伤口护理</span><span class="tag">清洁用品</span>
+      </div>
+      <div class="block-title">非显然联卖品类</div>
+      <div class="tag-list">
+        <span class="tag non-obvious">失禁护理</span><span class="tag non-obvious">伤口护理</span><span class="tag non-obvious">清洁用品</span>
+      </div>
+      <div class="block-title">目录逻辑</div>
+      <div class="card-text">same_channel + same_customer + same_business_model</div>
+      <div class="card-link">证据：<a href="https://www.medline.com/category/Mobility-Aids/Wheelchairs/Z05-CA06_02_04" target="_blank">官网轮椅目录</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="category" data-category="retail">
+  <div class="cat-header" onclick="toggleCat('retail')">
+    <h3>第三类：专业零售商</h3>
+    <span class="cat-badge">1 家</span>
+    <span class="toggle expanded" id="toggle-retail"></span>
+  </div>
+  <div class="cat-summary">专业零售商的扩张以消费者 mobility journey 为主，容易延伸到无障碍改造和车辆辅助。</div>
+  <div class="card-grid" id="grid-retail">
+    <div class="card top searchable" data-score="90" data-tags="retail 1800wheelchair 坡道 楼梯升降 车辆升降">
+      <div class="card-header"><div class="card-name">1800Wheelchair</div><span class="card-score score-high">90</span></div>
+      <div class="card-type">专业零售商</div>
+      <div class="card-meta">📍 New York, NY | mobility 消费零售</div>
+      <div class="block-title">目标产品匹配</div>
+      <div class="card-text">轮椅为核心主营类目，目录明显围绕 mobility 与 accessibility 扩张。</div>
+      <div class="block-title">其他主营商品</div>
+      <div class="tag-list">
+        <span class="tag">代步车</span><span class="tag">坡道</span><span class="tag">座垫</span><span class="tag">楼梯升降</span><span class="tag">车辆升降</span>
+      </div>
+      <div class="block-title">非显然联卖品类</div>
+      <div class="tag-list">
+        <span class="tag non-obvious">楼梯升降</span><span class="tag non-obvious">车辆升降</span><span class="tag non-obvious">lift chair</span>
+      </div>
+      <div class="block-title">目录逻辑</div>
+      <div class="card-text">same_customer + same_scenario</div>
+      <div class="card-link">证据：<a href="https://www.1800wheelchair.com/category/wheelchairs.html" target="_blank">官网轮椅分类</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="category" data-category="ecom">
+  <div class="cat-header" onclick="toggleCat('ecom')">
+    <h3>第四类：电商卖家</h3>
+    <span class="cat-badge">1 家</span>
+    <span class="toggle expanded" id="toggle-ecom"></span>
+  </div>
+  <div class="cat-summary">电商卖家会把轮椅放进更宽的家庭健康商品池中，跨入支具、监测、疼痛护理等 consumer health 类目。</div>
+  <div class="card-grid" id="grid-ecom">
+    <div class="card searchable" data-score="88" data-tags="ecom vivehealth 血压计 疼痛护理 支具">
+      <div class="card-header"><div class="card-name">Vive Health</div><span class="card-score score-mid">88</span></div>
+      <div class="card-type">电商卖家</div>
+      <div class="card-meta">📍 Naples, FL | DTC 健康用品卖家</div>
+      <div class="block-title">目标产品匹配</div>
+      <div class="card-text">官网可见轮椅产品，同时覆盖广泛居家健康与辅助生活目录。</div>
+      <div class="block-title">其他主营商品</div>
+      <div class="tag-list">
+        <span class="tag">支具</span><span class="tag">卫浴安全</span><span class="tag">血压计</span><span class="tag">疼痛护理</span><span class="tag">压缩护理</span>
+      </div>
+      <div class="block-title">非显然联卖品类</div>
+      <div class="tag-list">
+        <span class="tag non-obvious">血压计</span><span class="tag non-obvious">疼痛护理</span><span class="tag non-obvious">压缩护理</span>
+      </div>
+      <div class="block-title">目录逻辑</div>
+      <div class="card-text">same_customer + same_channel</div>
+      <div class="card-link">证据：<a href="https://www.vivehealth.com" target="_blank">官网主页</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="category" data-category="solution">
+  <div class="cat-header" onclick="toggleCat('solution')">
+    <h3>第五类：方案型卖家</h3>
+    <span class="cat-badge">1 家</span>
+    <span class="toggle expanded" id="toggle-solution"></span>
+  </div>
+  <div class="cat-summary">方案型卖家不是单卖 mobility 产品，而是围绕 rehab、accessibility 和特殊需求场景打包目录。</div>
+  <div class="card-grid" id="grid-solution">
+    <div class="card searchable" data-score="84" data-tags="solution rehabmart 感觉统合 学校设备 康复设备">
+      <div class="card-header"><div class="card-name">Rehabmart</div><span class="card-score score-mid">84</span></div>
+      <div class="card-type">方案型卖家</div>
+      <div class="card-meta">📍 Elberton, GA | rehab / accessibility solution seller</div>
+      <div class="block-title">目标产品匹配</div>
+      <div class="card-text">轮椅位于 rehab 与 accessibility 目录体系内，不是孤立单类。</div>
+      <div class="block-title">其他主营商品</div>
+      <div class="tag-list">
+        <span class="tag">康复设备</span><span class="tag">坡道</span><span class="tag">洗浴辅助</span><span class="tag">感觉统合</span><span class="tag">学校设备</span>
+      </div>
+      <div class="block-title">非显然联卖品类</div>
+      <div class="tag-list">
+        <span class="tag non-obvious">感觉统合</span><span class="tag non-obvious">学校设备</span>
+      </div>
+      <div class="block-title">目录逻辑</div>
+      <div class="card-text">same_scenario + same_customer</div>
+      <div class="card-link">证据：<a href="https://www.rehabmart.com/category/wheelchairs.html" target="_blank">官网轮椅分类</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="category" data-category="catalog">
+  <div class="cat-header" onclick="toggleCat('catalog')">
+    <h3>第六类：目录型供应商</h3>
+    <span class="cat-badge">1 家</span>
+    <span class="toggle expanded" id="toggle-catalog"></span>
+  </div>
+  <div class="cat-summary">目录型供应商以采购便利性驱动 SKU 宽度，因此更容易出现轮椅与 PPE、应急物资、特殊教育产品共存。</div>
+  <div class="card-grid" id="grid-catalog">
+    <div class="card searchable" data-score="76" data-tags="catalog schoolhealth ppe 应急物资 感觉教室">
+      <div class="card-header"><div class="card-name">School Health</div><span class="card-score score-mid">76</span></div>
+      <div class="card-type">目录型供应商</div>
+      <div class="card-meta">📍 Rolling Meadows, IL | 学校与机构健康用品目录供应商</div>
+      <div class="block-title">目标产品匹配</div>
+      <div class="card-text">轮椅深度弱于 mobility 专业卖家，但有纳入公开可见目录或搜索结构。</div>
+      <div class="block-title">其他主营商品</div>
+      <div class="tag-list">
+        <span class="tag">治疗工具</span><span class="tag">PPE</span><span class="tag">应急物资</span><span class="tag">学校健康用品</span><span class="tag">感觉教室产品</span>
+      </div>
+      <div class="block-title">非显然联卖品类</div>
+      <div class="tag-list">
+        <span class="tag non-obvious">PPE</span><span class="tag non-obvious">应急物资</span><span class="tag non-obvious">感觉教室产品</span>
+      </div>
+      <div class="block-title">目录逻辑</div>
+      <div class="card-text">same_channel + same_business_model</div>
+      <div class="card-link">证据：<a href="https://www.schoolhealth.com/search?keywords=wheelchair" target="_blank">官网搜索结果</a></div>
+    </div>
+  </div>
+</section>
+
+<section class="issues">
+  <h2>问题点与证据不足</h2>
+  <ul>
+    <li>目录型供应商中的轮椅通常不是强主营，更多体现为“纳入采购目录”而非“高深度经营”。</li>
+    <li>电商卖家的联卖品类受平台运营与投放策略影响，长期稳定性弱于品牌商与分销商。</li>
+    <li>某些非显然联卖项能从目录结构看到，但无法仅凭网页证明营收贡献或销量占比。</li>
+    <li>如果后续要用于客户优先级排序，应进一步叠加渠道位置、采购角色与公司规模判断。</li>
+  </ul>
+</section>
+
+<footer>horizontal-scout 示例 HTML 输出模板</footer>
+
+</div>
+
+<script>
+  function toggleCat(id) {
+    const grid = document.getElementById(`grid-${id}`);
+    const toggle = document.getElementById(`toggle-${id}`);
+    grid.classList.toggle('hidden');
+    toggle.classList.toggle('expanded');
+    toggle.classList.toggle('collapsed');
+  }
+
+  const filterButtons = document.querySelectorAll('.filter-btn');
+  const categories = document.querySelectorAll('.category');
+  const cards = document.querySelectorAll('.searchable');
+  const searchInput = document.getElementById('searchInput');
+
+  function applyFilters() {
+    const active = document.querySelector('.filter-btn.active')?.dataset.filter || 'all';
+    const query = searchInput.value.trim().toLowerCase();
+
+    categories.forEach((category) => {
+      const categoryKey = category.dataset.category;
+      const categoryCards = category.querySelectorAll('.searchable');
+      let visibleCardCount = 0;
+
+      categoryCards.forEach((card) => {
+        const score = Number(card.dataset.score || 0);
+        const tags = (card.dataset.tags || '').toLowerCase();
+        const text = card.innerText.toLowerCase();
+
+        const filterMatch =
+          active === 'all' ||
+          (active === 'top' && score >= 90) ||
+          active === categoryKey;
+
+        const searchMatch =
+          query === '' ||
+          tags.includes(query) ||
+          text.includes(query);
+
+        const visible = filterMatch && searchMatch;
+        card.style.display = visible ? '' : 'none';
+        if (visible) visibleCardCount += 1;
+      });
+
+      category.style.display = visibleCardCount > 0 ? '' : 'none';
+    });
+  }
+
+  filterButtons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      filterButtons.forEach((node) => node.classList.remove('active'));
+      btn.classList.add('active');
+      applyFilters();
+    });
+  });
+
+  searchInput.addEventListener('input', applyFilters);
+</script>
+</body>
+</html>
