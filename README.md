@@ -28,6 +28,7 @@ b2b-skills/
 |------|---------|
 | `b2b-lead-scout` | Find and structure B2B leads by product and region, with export workflows for CSV/Markdown/JSON and runtime-aware fallbacks. |
 | `hidden-buyer-scout` | Find non-obvious cross-industry buyers by usage scenario, buying logic, and hidden bulk-purchase signals. |
+| `horizontal-scout` | Analyze seller types and catalog structure for a target product, then summarize what else those sellers typically sell beyond the target product. |
 | `tavily-search` | Tavily-based search helper skill for search execution and related tooling. |
 
 ## Adding New Skills
