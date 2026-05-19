@@ -34,6 +34,16 @@ description: >
 - Windows 10/11（使用 winget 安装）
 - macOS/Linux：使用 `python3 --version` 检测，手动安装 https://python.org
 
+## API Key 配置
+
+运行前必须通过环境变量提供 Tavily API Key：
+
+```bash
+export TAVILY_API_KEY="你的 Tavily API Key"
+```
+
+不要把 API Key 写进 `tavily.py` 或提交到 Git 仓库。
+
 ---
 
 # Tavily Search Skill

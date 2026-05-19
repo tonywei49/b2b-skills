@@ -4,17 +4,25 @@
 import sys
 import json
 import argparse
+import os
 import urllib.request
 import urllib.error
 import time
 
 BASE_URL = "https://api.tavily.com"
-API_KEY = "REDACTED_TAVILY_API_KEY"
+
+def get_api_key():
+    api_key = os.environ.get("TAVILY_API_KEY")
+    if not api_key:
+        print("ERROR: TAVILY_API_KEY environment variable is not set", file=sys.stderr)
+        sys.exit(2)
+    return api_key
 
 def poll_result(request_id, max_wait=60):
     """轮询 research 任务结果"""
+    api_key = get_api_key()
     poll_url = BASE_URL + "/research/" + request_id + "/result"
-    headers = {"Authorization": "Bearer " + API_KEY}
+    headers = {"Authorization": "Bearer " + api_key}
     waited = 0
     interval = 2
     while waited < max_wait:
@@ -40,15 +48,17 @@ def poll_result(request_id, max_wait=60):
     sys.exit(1)
 
 def do_search(query, search_depth="basic", max_results=5, topic="general"):
+    api_key = get_api_key()
     url = BASE_URL + "/search"
-    payload = {"api_key": API_KEY, "query": query, "search_depth": search_depth, "max_results": max_results, "topic": topic}
+    payload = {"api_key": api_key, "query": query, "search_depth": search_depth, "max_results": max_results, "topic": topic}
     return post(url, payload)
 
 def do_research(topic, model="auto"):
+    api_key = get_api_key()
     url = BASE_URL + "/research"
-    payload = {"api_key": API_KEY, "input": topic, "model": model}
+    payload = {"api_key": api_key, "input": topic, "model": model}
     data = json.dumps(payload).encode("utf-8")
-    headers = {"Content-Type": "application/json", "Authorization": "Bearer " + API_KEY}
+    headers = {"Content-Type": "application/json", "Authorization": "Bearer " + api_key}
     req = urllib.request.Request(url, data=data, headers=headers, method="POST")
     try:
         with urllib.request.urlopen(req, timeout=30) as resp:
@@ -68,18 +78,20 @@ def do_research(topic, model="auto"):
         sys.exit(1)
 
 def do_extract(url):
+    api_key = get_api_key()
     req_url = BASE_URL + "/extract"
-    payload = {"api_key": API_KEY, "urls": [url]}
+    payload = {"api_key": api_key, "urls": [url]}
     return post(req_url, payload)
 
 def do_crawl(url, max_depth=2, max_urls=10):
+    api_key = get_api_key()
     map_url = BASE_URL + "/map"
-    map_payload = {"api_key": API_KEY, "url": url, "max_depth": max_depth, "max_urls": max_urls}
+    map_payload = {"api_key": api_key, "url": url, "max_depth": max_depth, "max_urls": max_urls}
     map_result = post(map_url, map_payload)
     if "discovered_urls" in map_result and map_result["discovered_urls"]:
         urls_to_crawl = map_result["discovered_urls"][:max_urls]
         crawl_url = BASE_URL + "/crawl"
-        crawl_payload = {"api_key": API_KEY, "urls": urls_to_crawl}
+        crawl_payload = {"api_key": api_key, "urls": urls_to_crawl}
         return post(crawl_url, crawl_payload)
     return map_result
 
